@@ -1,6 +1,6 @@
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
-import { Task, CustomField } from "@/types";
+import { Task, CustomField, TaskPriority, TaskStatus } from "@/types";
 import { mockData } from "@/mock-data";
 
 const tasksAtom = atomWithStorage<Task[]>("tasks", mockData);
@@ -12,16 +12,68 @@ const useCreateTask = () => {
   };
 };
 
+const priorityOrder = {
+  [TaskPriority.Urgent]: 0,
+  [TaskPriority.High]: 1,
+  [TaskPriority.Medium]: 2,
+  [TaskPriority.Low]: 3,
+  [TaskPriority.None]: 4,
+};
+
+const statusOrder = {
+  [TaskStatus.NotStarted]: 0,
+  [TaskStatus.InProgress]: 1,
+  [TaskStatus.Completed]: 2,
+};
+
 const useReadTasks = () => {
   const [tasks] = useAtom(tasksAtom);
-  return (page: number, limit: number) => {
+  return (
+    page: number,
+    limit: number,
+    sortBy?: "title" | "priority" | "status",
+    sortOrder: "asc" | "desc" = "asc"
+  ) => {
     const totalPages = Math.ceil(tasks.length / limit);
+
+    const sortedTasks = [...tasks];
+
+    if (sortBy) {
+      sortedTasks.sort((a, b) => {
+        if (sortBy === "title") {
+          const comparison = a.title.localeCompare(b.title);
+          return sortOrder === "asc" ? comparison : -comparison;
+        }
+
+        if (sortBy === "priority") {
+          const comparison =
+            priorityOrder[a.priority] - priorityOrder[b.priority];
+          return sortOrder === "asc" ? comparison : -comparison;
+        }
+
+        if (sortBy === "status") {
+          const comparison = statusOrder[a.status] - statusOrder[b.status];
+          return sortOrder === "asc" ? comparison : -comparison;
+        }
+
+        return 0;
+      });
+    } else {
+      // Default sort by id if no sort specified
+      sortedTasks.sort((a, b) => b.id - a.id);
+    }
+
     return {
-      tasks: tasks
-        .sort((a, b) => b.id - a.id)
-        .slice((page - 1) * limit, page * limit),
+      tasks: sortedTasks.slice((page - 1) * limit, page * limit),
       totalPages,
     };
+  };
+};
+
+const useGetTaskById = () => {
+  const [tasks] = useAtom(tasksAtom);
+  return (id: number) => {
+    return tasks.find((task) => task.id === id) || null;
   };
 };
 
@@ -82,4 +134,5 @@ export {
   useDeleteTask,
   useAddCustomField,
   useRemoveCustomField,
+  useGetTaskById,
 };

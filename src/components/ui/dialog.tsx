@@ -98,7 +98,7 @@ const DialogDescription = ({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
   <p
-    className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
+    className={cn("text-sm mt-1 text-gray-500 dark:text-gray-400", className)}
     {...props}
   />
 );

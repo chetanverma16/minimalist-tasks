@@ -1,4 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useUpdateTask, useGetTaskById } from "@/lib/taskapi";
+import * as z from "zod";
+
+// components
 import {
   Dialog,
   DialogContent,
@@ -7,11 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateTask } from "@/lib/taskapi";
-import { TaskPriority, TaskStatus } from "@/types";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -21,6 +22,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import DropdownMenu from "@/components/ui/select";
+
+// types
+import { TaskPriority, TaskStatus } from "@/types";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
@@ -37,36 +41,52 @@ const formatEnumValue = (value: string) => {
     .join(" ");
 };
 
-const CreateTaskModal = ({
+const UpdateTaskModal = ({
   open,
   onOpenChange,
+  taskId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  taskId: number | null;
 }) => {
-  const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
+  const getTaskById = useGetTaskById();
+  const task = taskId ? getTaskById(taskId) : null;
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: "",
-      priority: TaskPriority.None,
-      status: TaskStatus.NotStarted,
+      priority: TaskPriority.Low,
+      status: TaskStatus.Completed,
     },
   });
 
+  useEffect(() => {
+    if (task) {
+      form.reset({
+        title: task.title,
+        priority: task.priority,
+        status: task.status,
+      });
+    }
+  }, [task, form]);
+
   const onSubmit = (data: TaskFormValues) => {
-    createTask({ id: Date.now(), ...data });
+    if (!taskId) return;
+    updateTask(taskId, data);
     form.reset();
     onOpenChange(false);
   };
 
+  if (!task) return null;
+
   return (
     <Dialog open={open}>
       <DialogContent>
-        <DialogTitle>Create a New Task</DialogTitle>
-        <DialogDescription>
-          Fill in the details below to add a new task.
-        </DialogDescription>
+        <DialogTitle>Update Task</DialogTitle>
+        <DialogDescription>Update the task details below.</DialogDescription>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -145,7 +165,7 @@ const CreateTaskModal = ({
                 Cancel
               </Button>
               <Button disabled={form.formState.isSubmitting} type="submit">
-                {form.formState.isSubmitting ? "Saving..." : "Save"}
+                {form.formState.isSubmitting ? "Updating..." : "Update"}
               </Button>
             </div>
           </form>
@@ -155,4 +175,4 @@ const CreateTaskModal = ({
   );
 };
 
-export default CreateTaskModal;
+export default UpdateTaskModal;
