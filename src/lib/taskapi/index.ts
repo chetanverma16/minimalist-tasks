@@ -17,7 +17,9 @@ const useReadTasks = () => {
   return (page: number, limit: number) => {
     const totalPages = Math.ceil(tasks.length / limit);
     return {
-      tasks: tasks.slice((page - 1) * limit, page * limit),
+      tasks: tasks
+        .sort((a, b) => b.id - a.id)
+        .slice((page - 1) * limit, page * limit),
       totalPages,
     };
   };
