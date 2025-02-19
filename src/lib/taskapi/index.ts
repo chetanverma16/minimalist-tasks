@@ -32,14 +32,37 @@ const useReadTasks = () => {
     page: number,
     limit: number,
     sortBy?: "title" | "priority" | "status",
-    sortOrder: "asc" | "desc" = "asc"
+    sortOrder: "asc" | "desc" = "asc",
+    filters?: {
+      title?: string;
+      priority?: TaskPriority[];
+      status?: TaskStatus[];
+    }
   ) => {
-    const totalPages = Math.ceil(tasks.length / limit);
+    let filteredTasks = [...tasks];
 
-    const sortedTasks = [...tasks];
+    // Apply filters
+    if (filters) {
+      if (filters.title) {
+        filteredTasks = filteredTasks.filter((task) =>
+          task.title.toLowerCase().includes(filters.title!.toLowerCase())
+        );
+      }
+      if (filters.priority?.length) {
+        filteredTasks = filteredTasks.filter((task) =>
+          filters.priority!.includes(task.priority)
+        );
+      }
+      if (filters.status?.length) {
+        filteredTasks = filteredTasks.filter((task) =>
+          filters.status!.includes(task.status)
+        );
+      }
+    }
 
+    // Sort filtered tasks
     if (sortBy) {
-      sortedTasks.sort((a, b) => {
+      filteredTasks.sort((a, b) => {
         if (sortBy === "title") {
           const comparison = a.title.localeCompare(b.title);
           return sortOrder === "asc" ? comparison : -comparison;
@@ -60,12 +83,15 @@ const useReadTasks = () => {
       });
     } else {
       // Default sort by id if no sort specified
-      sortedTasks.sort((a, b) => b.id - a.id);
+      filteredTasks.sort((a, b) => b.id - a.id);
     }
 
+    const totalPages = Math.ceil(filteredTasks.length / limit);
+
     return {
-      tasks: sortedTasks.slice((page - 1) * limit, page * limit),
+      tasks: filteredTasks.slice((page - 1) * limit, page * limit),
       totalPages,
+      totalItems: filteredTasks.length,
     };
   };
 };

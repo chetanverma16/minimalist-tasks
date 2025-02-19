@@ -1,17 +1,24 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type DropdownMenuProps = {
   options: {
     label: string;
     onClick: () => void;
     Icon?: React.ReactNode;
+    isActive?: boolean;
   }[];
   children: React.ReactNode;
+  shouldCloseOnClick?: boolean;
 };
 
-const DropdownMenu = ({ options, children }: DropdownMenuProps) => {
+const DropdownMenu = ({
+  options,
+  children,
+  shouldCloseOnClick = true,
+}: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -21,8 +28,10 @@ const DropdownMenu = ({ options, children }: DropdownMenuProps) => {
   return (
     <div className="relative">
       <div
-        onClick={toggleDropdown}
-        className="px-3 py-2 bg-white cursor-pointer flex items-center gap-x-2 hover:bg-gray-100 text-gray-900 shadow-sm border border-gray-200/50 rounded-lg"
+        onClick={() => {
+          toggleDropdown();
+        }}
+        className="px-3 py-2 bg-white cursor-pointer whitespace-nowrap flex items-center gap-x-2 hover:bg-gray-100 text-gray-900 shadow-sm border border-gray-200/50 rounded-lg"
       >
         {children ?? "Menu"}
         <>
@@ -83,12 +92,26 @@ const DropdownMenu = ({ options, children }: DropdownMenuProps) => {
                   key={option.label}
                   onClick={() => {
                     option.onClick();
-                    setIsOpen(false);
+                    if (shouldCloseOnClick) {
+                      setIsOpen(false);
+                    }
                   }}
-                  className="px-2 py-3 cursor-pointer text-gray-900 text-sm hover:bg-gray-100 rounded-lg w-full text-left flex items-center gap-x-2"
+                  className={cn(
+                    "px-2 py-3 cursor-pointer text-sm hover:bg-gray-100 rounded-lg w-full text-left flex items-center justify-between",
+                    option.isActive
+                      ? "bg-gray-100 text-blue-600"
+                      : "text-gray-900"
+                  )}
                 >
-                  {option.Icon}
-                  {option.label}
+                  <div className="flex items-center gap-x-2">
+                    {option.Icon}
+                    {option.label}
+                  </div>
+                  <div className="flex items-center gap-x-2">
+                    {option.isActive && (
+                      <Check className="h-4 w-4 text-blue-600" />
+                    )}
+                  </div>
                 </motion.div>
               ))
             ) : (
