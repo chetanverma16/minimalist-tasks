@@ -12,12 +12,14 @@ type DropdownMenuProps = {
   }[];
   children: React.ReactNode;
   shouldCloseOnClick?: boolean;
+  onlyIcon?: boolean;
 };
 
 const DropdownMenu = ({
   options,
   children,
   shouldCloseOnClick = true,
+  onlyIcon = false,
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,15 +36,17 @@ const DropdownMenu = ({
         className="px-3 py-2 bg-white cursor-pointer whitespace-nowrap flex items-center gap-x-2 hover:bg-gray-100 text-gray-900 shadow-sm border border-gray-200/50 rounded-lg"
       >
         {children ?? "Menu"}
-        <>
-          <motion.span
-            className="ml-2"
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut", type: "spring" }}
-          >
-            <ChevronDown className="h-4 w-4" />
-          </motion.span>
-        </>
+        {!onlyIcon && (
+          <>
+            <motion.span
+              className="ml-2"
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut", type: "spring" }}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </motion.span>
+          </>
+        )}
       </div>
 
       <AnimatePresence>

@@ -17,10 +17,4 @@ export type Task = {
   title: string;
   status: TaskStatus;
   priority: TaskPriority;
-  customFields?: Record<string, CustomField>;
-};
-
-export type CustomField = {
-  name: string;
-  type: "text" | "number" | "checkbox";
 };

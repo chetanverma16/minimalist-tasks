@@ -1,6 +1,6 @@
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
-import { Task, CustomField, TaskPriority, TaskStatus } from "@/types";
+import { Task, TaskPriority, TaskStatus } from "@/types";
 import { mockData } from "@/mock-data";
 
 const tasksAtom = atomWithStorage<Task[]>("tasks", mockData);
@@ -119,46 +119,11 @@ const useDeleteTask = () => {
   };
 };
 
-const useAddCustomField = () => {
-  const [tasks, setTasks] = useAtom(tasksAtom);
-  return (taskId: number, field: CustomField) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              customFields: { ...task.customFields, [field.name]: field },
-            }
-          : task
-      )
-    );
-  };
-};
-
-const useRemoveCustomField = () => {
-  const [tasks, setTasks] = useAtom(tasksAtom);
-  return (taskId: number, fieldName: string) => {
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === taskId && task.customFields) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [fieldName]: removed, ...remainingFields } =
-            task.customFields;
-          return { ...task, customFields: remainingFields };
-        }
-        return task;
-      })
-    );
-  };
-};
-
 export {
   tasksAtom,
   useCreateTask,
   useReadTasks,
   useUpdateTask,
   useDeleteTask,
-  useAddCustomField,
-  useRemoveCustomField,
   useGetTaskById,
 };
